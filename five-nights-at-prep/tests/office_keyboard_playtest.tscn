@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/office.tscn" id="1_office"]
+[ext_resource type="Script" path="res://tests/office_keyboard_playtest.gd" id="2_test"]
+
+[node name="OfficeKeyboardPlaytest" type="Node"]
+script = ExtResource("2_test")
+
+[node name="Office" parent="." instance=ExtResource("1_office")]

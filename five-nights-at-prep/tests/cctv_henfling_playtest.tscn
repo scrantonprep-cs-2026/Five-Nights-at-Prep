@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/office.tscn" id="1_office"]
+[ext_resource type="Script" path="res://tests/cctv_static_playtest.gd" id="2_test"]
+
+[node name="CCTVHenflingPlaytest" type="Node"]
+script = ExtResource("2_test")
+capture_directory = "res://backups/cam1_henfling_2_1793371889/verification"
+
+[node name="Office" parent="." instance=ExtResource("1_office")]
