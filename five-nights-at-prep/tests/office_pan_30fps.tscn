@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://tests/office_pan_playtest.tscn" id="1_test"]
+
+[node name="OfficePan30FPSTest" instance=ExtResource("1_test")]
+test_fps_cap = 30

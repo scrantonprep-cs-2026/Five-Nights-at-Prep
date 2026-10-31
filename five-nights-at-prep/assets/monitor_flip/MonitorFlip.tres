@@ -1,0 +1,62 @@
+[gd_resource type="SpriteFrames" load_steps=15 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_000.png" id="Frame000"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_001.png" id="Frame001"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_002.png" id="Frame002"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_003.png" id="Frame003"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_004.png" id="Frame004"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_005.png" id="Frame005"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_006.png" id="Frame006"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_007.png" id="Frame007"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_008.png" id="Frame008"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_009.png" id="Frame009"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_010.png" id="Frame010"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_011.png" id="Frame011"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_012.png" id="Frame012"]
+[ext_resource type="Texture2D" path="res://assets/monitor_flip/frames/flip_013.png" id="Frame013"]
+
+[resource]
+animations = [
+{
+"frames": [
+{"duration": 1.0, "texture": ExtResource("Frame000")},
+{"duration": 1.0, "texture": ExtResource("Frame001")},
+{"duration": 1.0, "texture": ExtResource("Frame002")},
+{"duration": 1.0, "texture": ExtResource("Frame003")},
+{"duration": 1.0, "texture": ExtResource("Frame004")},
+{"duration": 1.0, "texture": ExtResource("Frame005")},
+{"duration": 1.0, "texture": ExtResource("Frame006")},
+{"duration": 1.0, "texture": ExtResource("Frame007")},
+{"duration": 1.0, "texture": ExtResource("Frame008")},
+{"duration": 1.0, "texture": ExtResource("Frame009")},
+{"duration": 1.0, "texture": ExtResource("Frame010")},
+{"duration": 1.0, "texture": ExtResource("Frame011")},
+{"duration": 1.0, "texture": ExtResource("Frame012")},
+{"duration": 1.0, "texture": ExtResource("Frame013")},
+],
+"loop": false,
+"name": &"flip_up",
+"speed": 30.0
+},
+{
+"frames": [
+{"duration": 1.0, "texture": ExtResource("Frame013")},
+{"duration": 1.0, "texture": ExtResource("Frame012")},
+{"duration": 1.0, "texture": ExtResource("Frame011")},
+{"duration": 1.0, "texture": ExtResource("Frame010")},
+{"duration": 1.0, "texture": ExtResource("Frame009")},
+{"duration": 1.0, "texture": ExtResource("Frame008")},
+{"duration": 1.0, "texture": ExtResource("Frame007")},
+{"duration": 1.0, "texture": ExtResource("Frame006")},
+{"duration": 1.0, "texture": ExtResource("Frame005")},
+{"duration": 1.0, "texture": ExtResource("Frame004")},
+{"duration": 1.0, "texture": ExtResource("Frame003")},
+{"duration": 1.0, "texture": ExtResource("Frame002")},
+{"duration": 1.0, "texture": ExtResource("Frame001")},
+{"duration": 1.0, "texture": ExtResource("Frame000")},
+],
+"loop": false,
+"name": &"flip_down",
+"speed": 30.0
+},
+]

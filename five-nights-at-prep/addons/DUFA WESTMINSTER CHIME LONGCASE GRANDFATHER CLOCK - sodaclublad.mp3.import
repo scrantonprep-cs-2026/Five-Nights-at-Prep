@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bcgvwsuvh1i1k"
+path="res://.godot/imported/DUFA WESTMINSTER CHIME LONGCASE GRANDFATHER CLOCK - sodaclublad.mp3-cc94b0e0324862dcc10eb976f63078fe.mp3str"
+
+[deps]
+
+source_file="res://addons/DUFA WESTMINSTER CHIME LONGCASE GRANDFATHER CLOCK - sodaclublad.mp3"
+dest_files=["res://.godot/imported/DUFA WESTMINSTER CHIME LONGCASE GRANDFATHER CLOCK - sodaclublad.mp3-cc94b0e0324862dcc10eb976f63078fe.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

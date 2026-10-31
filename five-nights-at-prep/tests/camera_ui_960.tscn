@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/office.tscn" id="1_office"]
+
+[node name="CameraUI960Test" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="ViewportContainer" type="SubViewportContainer" parent="."]
+offset_right = 960.0
+offset_bottom = 540.0
+
+[node name="Viewport" type="SubViewport" parent="ViewportContainer"]
+size = Vector2i(960, 540)
+render_target_update_mode = 4
+
+[node name="Office" parent="ViewportContainer/Viewport" instance=ExtResource("1_office")]

@@ -1,0 +1,310 @@
+[gd_scene format=3 uid="uid://b4rgqk3drpi32"]
+
+[ext_resource type="Script" uid="uid://ca531ehrmg15j" path="res://office.gd" id="1_office"]
+[ext_resource type="PackedScene" path="res://scenes/door_button.tscn" id="2_button"]
+[ext_resource type="PackedScene" path="res://scenes/camera_system.tscn" id="3_cam"]
+[ext_resource type="AudioStream" uid="uid://p1qp2yhalqx4" path="res://Doorslam.wav" id="4_7jj4f"]
+[ext_resource type="AudioStream" uid="uid://dawmtcwxcbfli" path="res://elbuzz.wav" id="5_qphb6"]
+[ext_resource type="AudioStream" uid="uid://crkfai7cllsrr" path="res://WallButtonClick.wav" id="6_hub07"]
+[ext_resource type="Script" uid="uid://cgx15vgvxl1q1" path="res://power_meter.gd" id="7_power"]
+[ext_resource type="Script" uid="uid://bp0o0hphvm8kr" path="res://FNAP_Beta_Code.gd" id="8_fmddn"]
+[ext_resource type="Script" uid="uid://clki0b4q03bx6" path="res://power_out_sequence.gd" id="9_outage"]
+[ext_resource type="PackedScene" path="res://scenes/music_box.tscn" id="10_music_box"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.05, 0.05, 0.07, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.5, 0.5, 0.55, 1)
+ambient_light_energy = 0.6
+
+[sub_resource type="StandardMaterial3D" id="Mat_Floor"]
+albedo_color = Color(0.18, 0.18, 0.2, 1)
+roughness = 0.9
+
+[sub_resource type="StandardMaterial3D" id="Mat_Ceiling"]
+albedo_color = Color(0.55, 0.55, 0.58, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="Mat_Wall"]
+albedo_color = Color(0.45, 0.45, 0.5, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="Mat_Door"]
+albedo_color = Color(0.35, 0.38, 0.4, 1)
+metallic = 0.6
+roughness = 0.4
+
+[sub_resource type="BoxMesh" id="Mesh_Door"]
+size = Vector3(0.12, 2.2, 1.6)
+
+[sub_resource type="BoxShape3D" id="Shape_Door"]
+size = Vector3(0.12, 2.2, 1.6)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Hall"]
+albedo_color = Color(0.3, 0.3, 0.33, 1)
+roughness = 0.95
+
+[sub_resource type="StandardMaterial3D" id="Mat_Vent"]
+albedo_color = Color(0.04, 0.04, 0.05, 1)
+
+[sub_resource type="StandardMaterial3D" id="Mat_Desk"]
+albedo_color = Color(0.3, 0.2, 0.12, 1)
+roughness = 0.8
+
+[node name="Office" type="Node3D" unique_id=68972248]
+script = ExtResource("1_office")
+
+[node name="PowerOutSequence" type="Node" parent="." unique_id=526165264]
+script = ExtResource("9_outage")
+
+[node name="EmergencyRedLight" type="OmniLight3D" parent="PowerOutSequence" unique_id=296018050]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+visible = false
+light_color = Color(1, 0.025, 0.01, 1)
+light_energy = 0.7
+omni_range = 9.0
+
+[node name="PowerOutPiano" type="AudioStreamPlayer" parent="PowerOutSequence" unique_id=1152085002]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=726531441]
+environment = SubResource("Environment_1")
+
+[node name="CeilingLight" type="OmniLight3D" parent="." unique_id=847061141]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
+light_energy = 1.5
+omni_range = 12.0
+
+[node name="Floor" type="CSGBox3D" parent="." unique_id=373999898]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
+use_collision = true
+size = Vector3(6.3, 0.3, 6.3)
+material = SubResource("Mat_Floor")
+
+[node name="Ceiling" type="CSGBox3D" parent="." unique_id=1455005498]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.15, 0)
+use_collision = true
+size = Vector3(6.3, 0.3, 6.3)
+material = SubResource("Mat_Ceiling")
+
+[node name="WallBack" type="CSGBox3D" parent="." unique_id=639295529]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 3.15)
+use_collision = true
+size = Vector3(6.6, 3.3, 0.3)
+material = SubResource("Mat_Wall")
+
+[node name="WallFront" type="CSGBox3D" parent="." unique_id=529230268]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, -3.15)
+use_collision = true
+size = Vector3(6.6, 3.3, 0.3)
+material = SubResource("Mat_Wall")
+
+[node name="WallLeftFront" type="CSGBox3D" parent="." unique_id=841189419]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.15, 1.5, -1.9)
+use_collision = true
+size = Vector3(0.3, 3.3, 2.2)
+material = SubResource("Mat_Wall")
+
+[node name="WallLeftBack" type="CSGBox3D" parent="." unique_id=1187927829]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.15, 1.5, 1.9)
+use_collision = true
+size = Vector3(0.3, 3.3, 2.2)
+material = SubResource("Mat_Wall")
+
+[node name="WallLeftHeader" type="CSGBox3D" parent="." unique_id=1652652812]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.15, 2.75, 0)
+use_collision = true
+size = Vector3(0.3, 1.1, 1.6)
+material = SubResource("Mat_Wall")
+
+[node name="WallRightFront" type="CSGBox3D" parent="." unique_id=884687173]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 1.5, -1.9)
+use_collision = true
+size = Vector3(0.3, 3.3, 2.2)
+material = SubResource("Mat_Wall")
+
+[node name="WallRightBack" type="CSGBox3D" parent="." unique_id=605398127]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 1.5, 1.9)
+use_collision = true
+size = Vector3(0.3, 3.3, 2.2)
+material = SubResource("Mat_Wall")
+
+[node name="WallRightHeader" type="CSGBox3D" parent="." unique_id=506328551]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.15, 2.75, 0)
+use_collision = true
+size = Vector3(0.3, 1.1, 1.6)
+material = SubResource("Mat_Wall")
+
+[node name="LeftDoor" type="Node3D" parent="." unique_id=1345361575]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.37, 3.35, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="LeftDoor" unique_id=841733831]
+material_override = SubResource("Mat_Door")
+mesh = SubResource("Mesh_Door")
+
+[node name="Body" type="StaticBody3D" parent="LeftDoor" unique_id=730565010]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="LeftDoor/Body" unique_id=1699423747]
+shape = SubResource("Shape_Door")
+
+[node name="RightDoor" type="Node3D" parent="." unique_id=371498055]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.37, 3.35, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="RightDoor" unique_id=1353051959]
+material_override = SubResource("Mat_Door")
+mesh = SubResource("Mesh_Door")
+
+[node name="Body" type="StaticBody3D" parent="RightDoor" unique_id=240962597]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RightDoor/Body" unique_id=903898348]
+shape = SubResource("Shape_Door")
+
+[node name="HallLeftFloor" type="CSGBox3D" parent="." unique_id=1003282916]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.95, -0.15, 0)
+use_collision = true
+size = Vector3(1.3, 0.3, 2)
+material = SubResource("Mat_Hall")
+
+[node name="HallLeftCeiling" type="CSGBox3D" parent="." unique_id=1820910011]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.95, 2.35, 0)
+use_collision = true
+size = Vector3(1.3, 0.3, 2)
+material = SubResource("Mat_Hall")
+
+[node name="HallLeftBack" type="CSGBox3D" parent="." unique_id=531065875]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.75, 1.3, 0)
+use_collision = true
+size = Vector3(0.3, 2.9, 2)
+material = SubResource("Mat_Hall")
+
+[node name="HallLeftWallA" type="CSGBox3D" parent="." unique_id=1336796552]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.95, 1.3, 0.9)
+use_collision = true
+size = Vector3(1.3, 2.9, 0.2)
+material = SubResource("Mat_Hall")
+
+[node name="HallLeftWallB" type="CSGBox3D" parent="." unique_id=1449958235]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.95, 1.3, -0.9)
+use_collision = true
+size = Vector3(1.3, 2.9, 0.2)
+material = SubResource("Mat_Hall")
+
+[node name="HallLeftLight" type="OmniLight3D" parent="." unique_id=1746652050]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.95, 2.1, 0)
+visible = false
+light_energy = 2.0
+omni_range = 4.0
+
+[node name="HallRightFloor" type="CSGBox3D" parent="." unique_id=1757167041]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.95, -0.15, 0)
+use_collision = true
+size = Vector3(1.3, 0.3, 2)
+material = SubResource("Mat_Hall")
+
+[node name="HallRightCeiling" type="CSGBox3D" parent="." unique_id=1435387057]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.95, 2.35, 0)
+use_collision = true
+size = Vector3(1.3, 0.3, 2)
+material = SubResource("Mat_Hall")
+
+[node name="HallRightBack" type="CSGBox3D" parent="." unique_id=1307536145]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.75, 1.3, 0)
+use_collision = true
+size = Vector3(0.3, 2.9, 2)
+material = SubResource("Mat_Hall")
+
+[node name="HallRightWallA" type="CSGBox3D" parent="." unique_id=168570054]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.95, 1.3, 0.9)
+use_collision = true
+size = Vector3(1.3, 2.9, 0.2)
+material = SubResource("Mat_Hall")
+
+[node name="HallRightWallB" type="CSGBox3D" parent="." unique_id=710821710]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.95, 1.3, -0.9)
+use_collision = true
+size = Vector3(1.3, 2.9, 0.2)
+material = SubResource("Mat_Hall")
+
+[node name="HallRightLight" type="OmniLight3D" parent="." unique_id=551692324]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.95, 2.1, 0)
+visible = false
+light_energy = 2.0
+omni_range = 4.0
+
+[node name="VentOpening" type="CSGBox3D" parent="." unique_id=1766751538]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -2.97)
+use_collision = true
+size = Vector3(1.2, 0.9, 0.06)
+material = SubResource("Mat_Vent")
+
+[node name="VentCover" type="CSGBox3D" parent="." unique_id=127663174]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.95, -2.93)
+use_collision = true
+size = Vector3(1.2, 0.9, 0.08)
+material = SubResource("Mat_Door")
+
+[node name="Desk" type="Node3D" parent="." unique_id=1771404204]
+
+[node name="DeskTop" type="CSGBox3D" parent="Desk" unique_id=1739918503]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0.5)
+use_collision = true
+size = Vector3(2.8, 0.08, 1.2)
+material = SubResource("Mat_Desk")
+
+[node name="DeskBody" type="CSGBox3D" parent="Desk" unique_id=207258296]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, 0.5)
+use_collision = true
+size = Vector3(2.6, 0.9, 1)
+material = SubResource("Mat_Desk")
+
+[node name="MusicBox" parent="Desk" unique_id=46313459 instance=ExtResource("10_music_box")]
+transform = Transform3D(0.68, 0, 0, 0, 0.68, 0, 0, 0, 0.68, 1.02, 0.99, 0.32)
+
+[node name="LeftDoorButton" parent="." unique_id=1693861847 instance=ExtResource("2_button")]
+transform = Transform3D(-3.6199901e-06, 0, 1, 0, 1, 0, -1, 0, -3.6199901e-06, -2.95, 1.6, -1)
+
+[node name="LeftLightButton" parent="." unique_id=868719586 instance=ExtResource("2_button")]
+transform = Transform3D(-3.6199901e-06, 0, 1, 0, 1, 0, -1, 0, -3.6199901e-06, -2.95, 1.15, -1)
+off_color = Color(0.45, 0.45, 0.48, 1)
+on_color = Color(0.95, 0.95, 0.95, 1)
+
+[node name="RightDoorButton" parent="." unique_id=2055735824 instance=ExtResource("2_button")]
+transform = Transform3D(-3.6199901e-06, 0, -1, 0, 1, 0, 1, 0, -3.6199901e-06, 2.95, 1.6, -1)
+
+[node name="RightLightButton" parent="." unique_id=1897123453 instance=ExtResource("2_button")]
+transform = Transform3D(-3.6199901e-06, 0, -1, 0, 1, 0, 1, 0, -3.6199901e-06, 2.95, 1.15, -1)
+off_color = Color(0.45, 0.45, 0.48, 1)
+on_color = Color(0.95, 0.95, 0.95, 1)
+
+[node name="VentButton" parent="." unique_id=1291547761 instance=ExtResource("2_button")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 1, -2.92)
+
+[node name="Player" type="Camera3D" parent="." unique_id=289733770]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.55, 2.8)
+fov = 80.0
+
+[node name="CameraSystem" parent="." unique_id=411519740 instance=ExtResource("3_cam")]
+
+[node name="PowerMeter" type="CanvasLayer" parent="." unique_id=303348440]
+script = ExtResource("7_power")
+
+[node name="LeftDoorSound" type="AudioStreamPlayer3D" parent="." unique_id=656868266]
+stream = ExtResource("4_7jj4f")
+
+[node name="RightDoorSound" type="AudioStreamPlayer3D" parent="." unique_id=1262644917]
+stream = ExtResource("4_7jj4f")
+
+[node name="VentDoorSound" type="AudioStreamPlayer3D" parent="." unique_id=1313797307]
+stream = ExtResource("4_7jj4f")
+
+[node name="LeftDoorLight" type="AudioStreamPlayer3D" parent="." unique_id=172210544]
+stream = ExtResource("5_qphb6")
+
+[node name="RightDoorLight" type="AudioStreamPlayer3D" parent="." unique_id=751676491]
+stream = ExtResource("5_qphb6")
+
+[node name="ButtonClickSound" type="AudioStreamPlayer3D" parent="." unique_id=444820607]
+stream = ExtResource("6_hub07")
+
+[node name="AIandSystems" type="Node" parent="." unique_id=392349092]
+script = ExtResource("8_fmddn")

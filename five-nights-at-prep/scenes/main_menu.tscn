@@ -1,0 +1,111 @@
+[gd_scene format=3 uid="uid://ccmwcuyslmc5q"]
+
+[ext_resource type="Script" uid="uid://cyfnau8acgxww" path="res://main_menu.gd" id="1_menu"]
+
+[sub_resource type="StyleBoxFlat" id="Style_normal"]
+bg_color = Color(0.035, 0.035, 0.035, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.6, 0.6, 0.6, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="Style_pressed"]
+bg_color = Color(0.02, 0.02, 0.02, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="Style_hover"]
+bg_color = Color(0.12, 0.12, 0.12, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.95, 0.95, 0.95, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="Style_focus"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85, 0.85, 0.85, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[node name="MainMenu" type="Control" unique_id=638559918]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="Background" type="ColorRect" parent="." unique_id=434157125]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Center" type="CenterContainer" parent="." unique_id=1260065380]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Content" type="VBoxContainer" parent="Center" unique_id=1899318808]
+custom_minimum_size = Vector2(540, 0)
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 36
+
+[node name="Title" type="Label" parent="Center/Content" unique_id=961405926]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_font_sizes/font_size = 48
+text = "Five Nights at Prep"
+horizontal_alignment = 1
+
+[node name="PlayButton" type="Button" parent="Center/Content" unique_id=1241455226]
+custom_minimum_size = Vector2(240, 56)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.95, 0.95, 0.95, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("Style_normal")
+theme_override_styles/pressed = SubResource("Style_pressed")
+theme_override_styles/hover = SubResource("Style_hover")
+theme_override_styles/focus = SubResource("Style_focus")
+text = "Play"
+
+[node name="MenuChime" type="AudioStreamPlayer" parent="." unique_id=284626135]
+volume_db = -6.0
+
+[connection signal="pressed" from="Center/Content/PlayButton" to="." method="_on_play_pressed"]

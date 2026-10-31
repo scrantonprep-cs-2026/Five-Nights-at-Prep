@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://button_3d.gd" id="1_button"]
+
+[sub_resource type="BoxShape3D" id="Shape_button"]
+size = Vector3(0.4, 0.28, 0.1)
+
+[sub_resource type="BoxMesh" id="Mesh_button"]
+size = Vector3(0.4, 0.28, 0.1)
+
+[node name="OfficeButton" type="Area3D"]
+script = ExtResource("1_button")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("Shape_button")
+
+[node name="Mesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("Mesh_button")

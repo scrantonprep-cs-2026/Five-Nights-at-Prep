@@ -1,0 +1,18 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://camera_system.gd" id="1_cctv"]
+[ext_resource type="AudioStream" path="res://CamerasUp.wav" id="2_up"]
+[ext_resource type="AudioStream" path="res://CamerasDown.wav" id="3_down"]
+[ext_resource type="AudioStream" path="res://blip3.wav" id="4_switch"]
+
+[node name="CameraSystem" type="CanvasLayer"]
+script = ExtResource("1_cctv")
+
+[node name="CamerasUp" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("2_up")
+
+[node name="CamerasDown" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_down")
+
+[node name="CameraSwitchSound" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("4_switch")

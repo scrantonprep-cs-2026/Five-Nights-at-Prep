@@ -218,3 +218,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Godot generated files
+.godot/
+
+# Ziva backup folders
+Backups/
+
+# macOS clutter
+.DS_Store
+
+# Large raw footage
+*.mp4
+*.mov
+**/addons/ziva_agent/zivacode/

@@ -1,0 +1,377 @@
+class_name CameraSystem
+extends CanvasLayer
+
+## Tablet-style facilities map. A grey rectangle sits at the bottom of the
+## screen; hovering over it opens an iPad-styled map view that shows the actual
+## facility map image, with clickable camera markers laid over the "C" boxes
+## drawn on the map. Camera feeds are not wired up yet - clicking a camera
+## shows a placeholder feed that can be dismissed with its X button.
+
+@onready var camera_system_up_sound: AudioStreamPlayer3d = $CamerasUp
+@onready var camera_system_down_sound: AudioStreamPlayer3d = $CamerasDown
+
+
+## Emitted when the monitor/tablet is flipped up (opened).
+signal monitor_opened
+
+const MAP_IMAGE_PATH := "res://assets/map_reference.png"
+
+## Transparent 720p flip-up / flip-down frames (see assets/monitor_flip/README.txt).
+const FLIP_FRAMES_PATH := "res://assets/monitor_flip/MonitorFlip.tres"
+
+## Each entry: marker name + its position as a fraction of the map image
+## (0..1). These were measured from the "C" boxes in the source image.
+const CAMERAS: Array = [
+	{"name": "Yondr Hall", "norm": Vector2(0.3206, 0.0513)},
+	{"name": "Admin Hall", "norm": Vector2(0.3969, 0.2433)},
+	{"name": "Bellarmine", "norm": Vector2(0.1586, 0.4332)},
+	{"name": "Left Classroom", "norm": Vector2(0.1501, 0.6643)},
+	{"name": "Right Classroom", "norm": Vector2(0.9126, 0.5458)},
+	{"name": "L Hall", "norm": Vector2(0.2689, 0.7372)},
+	{"name": "R Hall", "norm": Vector2(0.6183, 0.7372)},
+]
+
+const HOTSPOT_SIZE := Vector2(0.062, 0.052)
+
+var _tablet_button: Button
+var _ipad: Panel
+var _screen: Panel
+var _header: Label
+var _close_button: Button
+var _map_area: Control
+var _map_image: TextureRect
+var _hotspots: Control
+var _feed_panel: Panel
+var _feed_label: Label
+var _feed_close: Button
+var _bevel: Panel
+var _bezel_cam: Panel
+
+var _flip_sprite: AnimatedSprite2D
+
+var _map_tex_size := Vector2(1000.0, 1000.0)
+
+## Monitor state. `_flipping` is true while a flip animation plays, which gates
+## input so the transition can't be interrupted mid-way.
+var _is_open := false
+var _flipping := false
+
+
+func _ready() -> void:
+	layer = 10
+	_build_ui()
+	_build_map()
+	_build_flip()
+	_layout()
+	get_viewport().size_changed.connect(_layout)
+	_ipad.visible = false
+
+
+func _build_ui() -> void:
+	var root := Control.new()
+	root.name = "UIRoot"
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(root)
+
+	# --- bottom grey "monitor" hover area ---
+	_tablet_button = Button.new()
+	_tablet_button.name = "TabletButton"
+	_tablet_button.text = "MONITOR"
+	_tablet_button.focus_mode = Control.FOCUS_NONE
+	_tablet_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_tablet_button.add_theme_font_size_override("font_size", 18)
+	_tablet_button.add_theme_color_override("font_color", Color(0.14, 0.14, 0.16))
+	_tablet_button.add_theme_stylebox_override("normal", _flat_box(Color(0.55, 0.56, 0.58), Color(0.30, 0.30, 0.32), 2, 8))
+	_tablet_button.add_theme_stylebox_override("hover", _flat_box(Color(0.68, 0.69, 0.71), Color(0.30, 0.30, 0.32), 2, 8))
+	_tablet_button.add_theme_stylebox_override("pressed", _flat_box(Color(0.45, 0.46, 0.48), Color(0.30, 0.30, 0.32), 2, 8))
+	_tablet_button.mouse_entered.connect(_on_tablet_hovered)
+	_tablet_button.z_index = 10
+	root.add_child(_tablet_button)
+
+	# --- iPad frame: a full-screen tablet bezel ---
+	_ipad = Panel.new()
+	_ipad.name = "IPad"
+	_ipad.add_theme_stylebox_override("panel", _flat_box(Color(0.085, 0.085, 0.095), Color(0.02, 0.02, 0.03), 0, 0))
+	root.add_child(_ipad)
+
+	_screen = Panel.new()
+	_screen.name = "Screen"
+	_screen.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_screen.add_theme_stylebox_override("panel", _flat_box(Color(0.94, 0.94, 0.96), Color(0.16, 0.16, 0.18), 2, 16))
+	_ipad.add_child(_screen)
+
+	# thin glossy highlight following the screen edge (bezel chamfer)
+	_bevel = Panel.new()
+	_bevel.name = "Bevel"
+	_bevel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bevel.add_theme_stylebox_override("panel", _flat_box(Color(0, 0, 0, 0), Color(0.42, 0.44, 0.5, 1), 2, 18))
+	_ipad.add_child(_bevel)
+
+	# front-facing camera lens, centred in the top bezel
+	_bezel_cam = Panel.new()
+	_bezel_cam.name = "BezelCamera"
+	_bezel_cam.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bezel_cam.add_theme_stylebox_override("panel", _flat_box(Color(0.05, 0.06, 0.08, 1), Color(0.35, 0.42, 0.55, 1), 2, 5))
+	_ipad.add_child(_bezel_cam)
+
+	_header = Label.new()
+	_header.name = "Header"
+	_header.text = "FACILITY MAP"
+	_header.add_theme_font_size_override("font_size", 26)
+	_header.add_theme_color_override("font_color", Color(0.14, 0.14, 0.16))
+	_ipad.add_child(_header)
+
+	_close_button = Button.new()
+	_close_button.name = "CloseButton"
+	_close_button.text = "X"
+	_close_button.focus_mode = Control.FOCUS_NONE
+	_close_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_close_button.add_theme_font_size_override("font_size", 20)
+	_close_button.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9))
+	_close_button.add_theme_stylebox_override("normal", _flat_box(Color(0.28, 0.28, 0.32), Color(0.5, 0.5, 0.55), 2, 6))
+	_close_button.add_theme_stylebox_override("hover", _flat_box(Color(0.55, 0.22, 0.22), Color(0.6, 0.6, 0.65), 2, 6))
+	_close_button.pressed.connect(_close_monitor)
+	_ipad.add_child(_close_button)
+
+	_map_area = Control.new()
+	_map_area.name = "MapArea"
+	_map_area.clip_contents = true
+	_map_area.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ipad.add_child(_map_area)
+
+	_map_image = TextureRect.new()
+	_map_image.name = "MapImage"
+	_map_image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_map_image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_map_image.stretch_mode = TextureRect.STRETCH_SCALE
+	var tex := _load_map_texture()
+	if tex != null:
+		_map_image.texture = tex
+		_map_tex_size = tex.get_size()
+	_map_area.add_child(_map_image)
+
+	_hotspots = Control.new()
+	_hotspots.name = "Hotspots"
+	_hotspots.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_map_area.add_child(_hotspots)
+
+	# --- placeholder camera feed ---
+	_feed_panel = Panel.new()
+	_feed_panel.name = "FeedPanel"
+	_feed_panel.visible = false
+	_feed_panel.add_theme_stylebox_override("panel", _flat_box(Color(0.07, 0.07, 0.09), Color(0.5, 0.5, 0.58), 2, 8))
+	_ipad.add_child(_feed_panel)
+
+	_feed_label = Label.new()
+	_feed_label.name = "FeedLabel"
+	_feed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_feed_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_feed_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_feed_label.add_theme_font_size_override("font_size", 20)
+	_feed_label.add_theme_color_override("font_color", Color(0.85, 0.9, 0.95))
+	_feed_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_feed_panel.add_child(_feed_label)
+
+	_feed_close = Button.new()
+	_feed_close.name = "FeedClose"
+	_feed_close.text = "X"
+	_feed_close.focus_mode = Control.FOCUS_NONE
+	_feed_close.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_feed_close.add_theme_font_size_override("font_size", 16)
+	_feed_close.add_theme_color_override("font_color", Color(0.9, 0.9, 0.95))
+	_feed_close.add_theme_stylebox_override("normal", _flat_box(Color(0.28, 0.28, 0.32), Color(0.55, 0.55, 0.6), 1, 4))
+	_feed_close.add_theme_stylebox_override("hover", _flat_box(Color(0.6, 0.22, 0.22), Color(0.7, 0.7, 0.75), 1, 4))
+	_feed_close.pressed.connect(_close_feed)
+	_feed_panel.add_child(_feed_close)
+
+	# Godot picks the hovered Control by tree order (z_index only affects drawing),
+	# so keep the MONITOR toggle as the front-most child of UIRoot. Otherwise the
+	# full-screen tablet covers it and the bar can't be hovered to flip back down.
+	root.move_child(_tablet_button, root.get_child_count() - 1)
+
+
+func _build_map() -> void:
+	for cam: Dictionary in CAMERAS:
+		var b := Button.new()
+		b.text = ""
+		b.focus_mode = Control.FOCUS_NONE
+		b.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		b.add_theme_stylebox_override("normal", _flat_box(Color(0, 0, 0, 0), Color(0, 0, 0, 0), 0, 4))
+		b.add_theme_stylebox_override("hover", _flat_box(Color(0.2, 0.5, 1.0, 0.28), Color(0.2, 0.5, 1.0, 0.9), 2, 4))
+		b.add_theme_stylebox_override("pressed", _flat_box(Color(0.2, 0.5, 1.0, 0.5), Color(0.2, 0.5, 1.0, 1.0), 2, 4))
+		b.pressed.connect(_on_camera_pressed.bind(cam["name"]))
+		_hotspots.add_child(b)
+
+
+func _on_camera_pressed(cam_name: String) -> void:
+	_feed_label.text = "CAM - %s\n— feed offline —" % cam_name
+	_feed_panel.visible = true
+
+
+func _build_flip() -> void:
+	_flip_sprite = AnimatedSprite2D.new()
+	_flip_sprite.name = "MonitorFlip"
+	_flip_sprite.centered = true
+	_flip_sprite.z_index = 100
+	_flip_sprite.visible = false
+	if ResourceLoader.exists(FLIP_FRAMES_PATH):
+		_flip_sprite.sprite_frames = load(FLIP_FRAMES_PATH)
+	else:
+		push_warning("CameraSystem: monitor flip frames not found at " + FLIP_FRAMES_PATH)
+	_flip_sprite.animation_finished.connect(_on_flip_finished)
+	add_child(_flip_sprite)
+
+
+func _close_feed() -> void:
+	_feed_panel.visible = false
+
+
+## Hovering the bottom MONITOR bar toggles the camera system: flip up to open
+## when it's closed, flip down to close when it's already open.
+func _on_tablet_hovered() -> void:
+	if _flipping:
+		return
+	if _is_open:
+		_close_monitor()
+	else:
+		_open_monitor()
+
+
+## True while the monitor/tablet is up. The office reads this to freeze its pan.
+func is_monitor_up() -> bool:
+	return _is_open
+
+
+## Open the monitor: play the flip-up frames, then reveal the map when it lands.
+func _open_monitor() -> void:
+	if _is_open or _flipping or _flip_sprite.sprite_frames == null:
+		return
+	_is_open = true
+	_flipping = true
+	_ipad.visible = false
+	_feed_panel.visible = false
+	_flip_sprite.visible = true
+	_flip_sprite.play("flip_up")
+	monitor_opened.emit()
+	camera_system_up_sound.play()
+	
+
+
+## Close the monitor: play the flip-down frames back to the office.
+func _close_monitor() -> void:
+	if not _is_open or _flipping or _flip_sprite.sprite_frames == null:
+		return
+	_is_open = false
+	_flipping = true
+	_ipad.visible = false
+	_feed_panel.visible = false
+	_flip_sprite.visible = true
+	_flip_sprite.play("flip_down")
+	camera_system_down_sound.play()
+
+
+func _on_flip_finished() -> void:
+	_flip_sprite.visible = false
+	_flipping = false
+	# flip_up ends opaque, so swap straight to the map. flip_down ends
+	# transparent, revealing the office that is already behind it.
+	_ipad.visible = _is_open
+	if not _is_open:
+		_feed_panel.visible = false
+
+
+func _load_map_texture() -> Texture2D:
+	if ResourceLoader.exists(MAP_IMAGE_PATH):
+		var tex: Texture2D = load(MAP_IMAGE_PATH)
+		if tex != null:
+			return tex
+	var img: Image = Image.load_from_file(ProjectSettings.globalize_path(MAP_IMAGE_PATH))
+	if img != null:
+		return ImageTexture.create_from_image(img)
+	push_warning("CameraSystem: could not load map image at " + MAP_IMAGE_PATH)
+	return null
+
+
+func _flat_box(fill: Color, border: Color, border_w: int, radius: int) -> StyleBoxFlat:
+	var box := StyleBoxFlat.new()
+	box.bg_color = fill
+	box.border_color = border
+	box.set_border_width_all(border_w)
+	box.set_corner_radius_all(radius)
+	return box
+
+
+func _layout() -> void:
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+
+	# bottom tablet button
+	var bw := 180.0
+	var bh := 46.0
+	_tablet_button.size = Vector2(bw, bh)
+	_tablet_button.position = Vector2((vp.x - bw) * 0.5, vp.y - bh - 14.0)
+
+	# tablet bezel fills the entire screen; the screen sits inside it
+	var bez: float = clampf(minf(vp.x, vp.y) * 0.06, 30.0, 64.0)
+	_ipad.size = vp
+	_ipad.position = Vector2.ZERO
+
+	_screen.position = Vector2(bez, bez)
+	_screen.size = vp - Vector2(bez * 2.0, bez * 2.0)
+
+	# glossy bevel ring hugging the screen edge
+	_bevel.position = Vector2(bez - 4.0, bez - 4.0)
+	_bevel.size = _screen.size + Vector2(8.0, 8.0)
+
+	# front camera lens centred in the top bezel
+	_bezel_cam.size = Vector2(10.0, 10.0)
+	_bezel_cam.position = Vector2(vp.x * 0.5 - 5.0, bez * 0.5 - 5.0)
+
+	_header.position = Vector2(_screen.position.x + 24.0, _screen.position.y + 14.0)
+	_header.size = Vector2(_screen.size.x - 140.0, 34.0)
+
+	_close_button.size = Vector2(40, 40)
+	_close_button.position = Vector2(vp.x - bez - 22.0 - 40.0, _screen.position.y + 12.0)
+
+	var header_h := 58.0
+	_map_area.position = Vector2(_screen.position.x + 20.0, _screen.position.y + header_h)
+	_map_area.size = Vector2(_screen.size.x - 40.0, _screen.size.y - header_h - 20.0)
+
+	# fit the map image inside the map area, preserving aspect ratio
+	var fit: float = minf(_map_area.size.x / _map_tex_size.x, _map_area.size.y / _map_tex_size.y)
+	var content: Vector2 = _map_tex_size * fit
+	var origin: Vector2 = (_map_area.size - content) * 0.5
+
+	_map_image.position = origin
+	_map_image.size = content
+
+	_hotspots.position = origin
+	_hotspots.size = content
+
+	var hs: Vector2 = Vector2(HOTSPOT_SIZE.x * content.x, HOTSPOT_SIZE.y * content.y)
+	for i in range(CAMERAS.size()):
+		var b: Button = _hotspots.get_child(i)
+		var norm: Vector2 = CAMERAS[i]["norm"]
+		b.size = hs
+		b.position = Vector2(norm.x * content.x, norm.y * content.y) - hs * 0.5
+
+	var fw := 360.0
+	var fh := 190.0
+	_feed_panel.size = Vector2(fw, fh)
+	_feed_panel.position = _map_area.position + (_map_area.size - _feed_panel.size) * 0.5
+
+	_feed_close.size = Vector2(30, 30)
+	_feed_close.position = Vector2(fw - 38, 8)
+
+	_layout_flip()
+
+
+func _layout_flip() -> void:
+	if _flip_sprite == null:
+		return
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	_flip_sprite.position = vp * 0.5
+	var frame_tex: Texture2D = _flip_sprite.sprite_frames.get_frame_texture("flip_up", 0)
+	var frame_size: Vector2 = frame_tex.get_size() if frame_tex != null else Vector2(1280, 720)
+	var s: float = maxf(vp.x / frame_size.x, vp.y / frame_size.y)
+	_flip_sprite.scale = Vector2(s, s)
